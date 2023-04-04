@@ -18,7 +18,10 @@ body{
     left: 0;
     top: 0;
     padding: 20px;
-    z-index: 7
+    z-index: 7;
+
+    overflow: auto;
+    height: 646px;
     }
     .chat-app .chat {
     margin-left: 280px;
