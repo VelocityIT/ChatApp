@@ -68,9 +68,9 @@ class UserController extends Controller
         return redirect('/login')->with('success', 'You are now logged out.');
     }
 
-    public function showDashboard()
+    public function showHomePage()
     {
-        return view('dashboard');
+        return view('homepage');
     }
 
 

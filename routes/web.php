@@ -28,16 +28,9 @@ Route::group(['middleware' => 'guest'], function () {
 });
 
 Route::group(['middleware' => 'auth'], function() {
-    Route::get('/', [UserController::class,'showDashboard']);
+    Route::get('/', [UserController::class,'showHomePage']);
     Route::get('/logout',[UserController::class,'logout']);
     Route::get('/change-password',[UserController::class,'changePassword']);
     Route::post('/change-password', [UserController::class,'updatePassword']);
-    Route::get('/scan',[UserController::class,'showScanView']);
-    Route::post('/scan', [UserController::class,'scanUrl']);
 
-    Route::get('/users',[UserController::class,'showUsers']);
-    Route::get('/urls',[UserController::class,'showUrls']);
-
-    Route::post('/change-user-status',[UserController::class,'changeUserStatus']);
-    Route::post('/change-admin-status',[UserController::class,'changeUserAdminStatus']);
 });
