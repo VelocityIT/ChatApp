@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\VirusTotalService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ForgotPasswordController;
@@ -14,6 +15,25 @@ use App\Http\Controllers\ForgotPasswordController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::get('/test', function () {
+    $virusTotalService = new VirusTotalService();
+
+    $url = 'https://example.com';
+
+    $url = 'https://testsafebrowsing.appspot.com/s/phishing.html';
+
+    $isSafe = $virusTotalService->isSafeUrl($url);
+
+    if ($isSafe) {
+        // URL is safe
+        return "Safe";
+    } else {
+        return "Unsafe";
+        // URL is not safe
+    }
+    return view('welcome');
+});
 
 Route::group(['middleware' => 'guest'], function () {
     Route::get('login',[UserController::class,'showLoginForm'])->name('login');

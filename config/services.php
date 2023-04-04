@@ -31,4 +31,7 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'virustotal' => [
+        'api_key' => env('VIRUSTOTAL_API_KEY'),
+    ],
 ];
