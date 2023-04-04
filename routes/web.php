@@ -42,26 +42,6 @@ Route::group(['middleware' => 'auth'], function() {
         preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $string, $match);
 
         $virusTotalService = new VirusTotalService();
-
-        // $isSafe = true;
-        // if(!empty( $match[0])){
-        //     foreach($match[0] as $url){
-        //         // return $url;
-        //         $isSafe = $virusTotalService->isSafeUrl($url);
-        //         if (!$isSafe) {
-        //             break;
-        //         }
-        //     }
-        // }
-
-        // if ($isSafe) {
-        //     return response()->json(['isSafe' => true]);
-        // } else {
-        //     return response()->json(['isSafe' => false]);
-        // }
-
-        // $url = 'https://example.com';
-        // $url = 'https://testsafebrowsing.appspot.com/s/phishing.html';
         $isSafe = $virusTotalService->isSafeUrl($match[0]);
         if ($isSafe) {
             return response()->json(['isSafe' => true]);

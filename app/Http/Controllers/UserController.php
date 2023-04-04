@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\WebsiteLink;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Services\SafeBrowsingService;
@@ -73,7 +74,12 @@ class UserController extends Controller
 
     public function showHomePage()
     {
-        $users = User::where('id','!=',Auth::id())->get();
+        // $users = User::where('id','!=',Auth::id())->get();
+        $users = DB::select("select users.id, users.name,users.phone, count(isRead) as unread
+        from users LEFT  JOIN  messages ON users.id = messages.from and isRead = 0 and messages.to = " . Auth::id() . "
+        where users.id != " . Auth::id() . "
+        group by users.id, users.name,users.phone");
+
         return view('homepage',compact('users'));
     }
 
@@ -81,6 +87,7 @@ class UserController extends Controller
     {
 
         $myId = Auth::id();
+        Message::where(['from' => $id, 'to' => $myId])->update(['isRead' => 1]);
         $messages = Message::where(function($query) use ($id,$myId){
             $query->where('from',$myId)->where('to',$id);
         })->orWhere(function($query) use ($id,$myId){
@@ -93,10 +100,6 @@ class UserController extends Controller
 
     public function sendMessage(Request $request)
     {
-
-
-
-
         $from = Auth::id();
         $to = $request->receiver_id;
         $message = $request->message;
