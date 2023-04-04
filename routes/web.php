@@ -36,18 +36,19 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/logout',[UserController::class,'logout']);
     Route::get('/message/{id}',[UserController::class,'getMessage']);
     Route::post('message', [UserController::class,'sendMessage']);
-    Route::get('/check', function () {
+});
 
-        $string = "The text you want to filter goes here. http://google.com, https://testsafebrowsing.appspot.com/s/phishing.html https://www.youtube.com/watch?v=K_m7NEDMrV0,https://instagram.com/hellow/";
-        preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $string, $match);
 
-        $virusTotalService = new VirusTotalService();
-        $isSafe = $virusTotalService->isSafeUrl($match[0]);
-        if ($isSafe) {
-            return response()->json(['isSafe' => true]);
-        } else {
-            return response()->json(['isSafe' => false]);
-        }
-    });
+Route::get('/check', function () {
 
+    $string = "The text you want to filter goes here. http://google.com, https://testsafebrowsing.appspot.com/s/phishing.html https://www.youtube.com/watch?v=K_m7NEDMrV0,https://instagram.com/hellow/";
+    preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $string, $match);
+
+    $virusTotalService = new VirusTotalService();
+    $isSafe = $virusTotalService->isSafeUrl($match[0]);
+    if ($isSafe) {
+        return response()->json(['isSafe' => true]);
+    } else {
+        return response()->json(['isSafe' => false]);
+    }
 });
