@@ -50,7 +50,5 @@ Route::group(['middleware' => 'guest'], function () {
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', [UserController::class,'showHomePage']);
     Route::get('/logout',[UserController::class,'logout']);
-    Route::get('/change-password',[UserController::class,'changePassword']);
-    Route::post('/change-password', [UserController::class,'updatePassword']);
 
 });

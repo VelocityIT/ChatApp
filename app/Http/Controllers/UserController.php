@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use App\Services\SafeBrowsingService;
 use App\Jobs\SendLoginNotificationMail;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -70,31 +71,9 @@ class UserController extends Controller
 
     public function showHomePage()
     {
-        return view('homepage');
+        $users = User::where('id','!=',Auth::id())->get();
+        return view('homepage',compact('users'));
     }
 
-
-    public function changePassword ()
-    {
-        return view('backend.auth.change-password');
-    }
-
-    public function updatePassword (Request $request)
-    {
-        $request->validate([
-            'old_password' => 'required',
-            'password' => 'required|confirmed|min:4',
-        ]);
-
-        if(!Hash::check($request->old_password, auth()->user()->password)){
-            return back()->with("failure", "Old password doesn't match!");
-        }
-
-        User::whereId(auth()->user()->id)->update([
-            'password' => Hash::make($request->password)
-        ]);
-
-        return back()->with("success", "Password changed successfully!");
-    }
 
 }
