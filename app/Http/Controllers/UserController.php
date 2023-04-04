@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Pusher\Pusher;
 use App\Models\User;
 use App\Models\History;
+use App\Models\Message;
 use App\Models\WebsiteLink;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Services\SafeBrowsingService;
 use App\Jobs\SendLoginNotificationMail;
-use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -75,5 +77,48 @@ class UserController extends Controller
         return view('homepage',compact('users'));
     }
 
+    public function getMessage($id)
+    {
+
+        $myId = Auth::id();
+        $messages = Message::where(function($query) use ($id,$myId){
+            $query->where('from',$myId)->where('to',$id);
+        })->orWhere(function($query) use ($id,$myId){
+            $query->where('from',$id)->where('to',$myId);
+        })->get();
+
+        return view('message',compact('messages'));
+    }
+
+
+    public function sendMessage(Request $request)
+    {
+        $from = Auth::id();
+        $to = $request->receiver_id;
+        $message = $request->message;
+
+        $data = new Message();
+        $data->from = $from;
+        $data->to = $to;
+        $data->text = $message;
+        $data->isRead = 0; // message will be unread when sending message
+        $data->save();
+
+        // pusher
+        $options = array(
+            'cluster' => 'ap2',
+            'useTLS' => true
+        );
+
+        $pusher = new Pusher(
+            env('PUSHER_APP_KEY'),
+            env('PUSHER_APP_SECRET'),
+            env('PUSHER_APP_ID'),
+            $options
+        );
+
+        $data = ['from' => $from, 'to' => $to]; // sending from and to user id when pressed enter
+        $pusher->trigger('my-channel', 'my-event', $data);
+    }
 
 }

@@ -16,24 +16,6 @@ use App\Http\Controllers\ForgotPasswordController;
 |
 */
 
-Route::get('/test', function () {
-    $virusTotalService = new VirusTotalService();
-
-    $url = 'https://example.com';
-
-    $url = 'https://testsafebrowsing.appspot.com/s/phishing.html';
-
-    $isSafe = $virusTotalService->isSafeUrl($url);
-
-    if ($isSafe) {
-        // URL is safe
-        return "Safe";
-    } else {
-        return "Unsafe";
-        // URL is not safe
-    }
-    return view('welcome');
-});
 
 Route::group(['middleware' => 'guest'], function () {
     Route::get('login',[UserController::class,'showLoginForm'])->name('login');
@@ -50,5 +32,18 @@ Route::group(['middleware' => 'guest'], function () {
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', [UserController::class,'showHomePage']);
     Route::get('/logout',[UserController::class,'logout']);
+    Route::get('/message/{id}',[UserController::class,'getMessage']);
+    Route::post('message', [UserController::class,'sendMessage']);
+    Route::get('/check', function () {
+        $virusTotalService = new VirusTotalService();
+        $url = 'https://example.com';
+        // $url = 'https://testsafebrowsing.appspot.com/s/phishing.html';
+        $isSafe = $virusTotalService->isSafeUrl($url);
+        if ($isSafe) {
+            return response()->json(['isSafe' => true]);
+        } else {
+            return response()->json(['isSafe' => false]);
+        }
+    });
 
 });

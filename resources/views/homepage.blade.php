@@ -3,6 +3,8 @@
    <head>
       <meta charset="utf-8">
       <title>Chat APP</title>
+
+        <meta name="csrf-token" content="{{ csrf_token() }}">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
       <style type="text/css">
@@ -87,7 +89,10 @@
          }
          .chat .chat-history {
          padding: 20px;
-         border-bottom: 2px solid #fff
+         border-bottom: 2px solid #fff;
+         height: 500px;
+
+    overflow: auto;
          }
          .chat .chat-history ul {
          padding: 0
@@ -243,10 +248,10 @@
 
                         @foreach ($users as $user)
 
-                        <li class="clearfix">
+                        <li class="clearfix user" id="{{ $user->id }}" name="{{ $user->name }}" phone="{{ $user->phone }}">
                            <div class="about">
                               <div class="name">{{ $user->name }}</div>
-                              <div class="status">{{ $user->phone; }}</div>
+                              <div class="status">{{ $user->phone }}</div>
                            </div>
                         </li>
 
@@ -260,11 +265,10 @@
                         <div class="row">
                            <div class="col-lg-6">
                               <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
-                              <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
                               </a>
                               <div class="chat-about">
-                                 <h6 class="m-b-0">Aiden Chavez</h6>
-                                 <small>Last seen: 2 hours ago</small>
+                                 <h6 class="m-b-0" id="name"></h6>
+                                 <small id="phone"></small>
                               </div>
                            </div>
                            <div class="col-lg-6 hidden-sm text-right">
@@ -272,35 +276,23 @@
                            </div>
                         </div>
                      </div>
+
+
                      <div class="chat-history">
-                        <ul class="m-b-0">
-                           <li class="clearfix">
-                              <div class="message-data text-right">
-                                 <span class="message-data-time">10:10 AM, Today</span>
-                                 <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
-                              </div>
-                              <div class="message other-message float-right"> Hi Aiden, how are you? How is the project coming along? </div>
-                           </li>
-                           <li class="clearfix">
-                              <div class="message-data">
-                                 <span class="message-data-time">10:12 AM, Today</span>
-                              </div>
-                              <div class="message my-message">Are we meeting today?</div>
-                           </li>
-                           <li class="clearfix">
-                              <div class="message-data">
-                                 <span class="message-data-time">10:15 AM, Today</span>
-                              </div>
-                              <div class="message my-message">Project has been already finished and I have results to show you.</div>
-                           </li>
+                        <ul class="m-b-0" id="messages">
+
+
+
                         </ul>
                      </div>
+
+
                      <div class="chat-message clearfix">
-                        <div class="input-group mb-0">
+                        <div class="input-group mb-0 input-text">
                            <div class="input-group-prepend">
                               <span class="input-group-text"><i class="fa fa-send"></i></span>
                            </div>
-                           <input type="text" class="form-control" placeholder="Enter text here...">
+                           <input type="text" class="form-control submit" name="message" placeholder="Enter text here...">
                         </div>
                      </div>
                   </div>
@@ -308,8 +300,104 @@
             </div>
          </div>
       </div>
+
+<script src="https://js.pusher.com/5.0/pusher.min.js"></script>
       <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
-      <script type="text/javascript"></script>
+    <script type="text/javascript">
+
+        var recieverId = '';
+        var myId = "{{ Auth::id() }}";
+
+        $(document).ready(function(){
+
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            Pusher.logToConsole = true;
+
+            var pusher = new Pusher('23c85b686682373fa34d', {
+                cluster: 'ap2',
+                forceTLS: true
+            });
+
+            var channel = pusher.subscribe('my-channel');
+            channel.bind('my-event', function (data) {
+                if (myId == data.from) {
+                    $('#' + data.to).click();
+                } else if (myId == data.to) {
+                    if (recieverId == data.from) {
+                        $('#' + data.from).click();
+                    } else {
+                        // var pending = parseInt($('#' + data.from).find('.pending').html());
+                        // if (pending) {
+                        //     $('#' + data.from).find('.pending').html(pending + 1);
+                        // } else {
+                        //     $('#' + data.from).append('<span class="pending">1</span>');
+                        // }
+                    }
+                }
+            });
+
+
+            $('.user').click(function(){
+                $('.user').removeClass('active');
+                $(this).addClass('active');
+                recieverId = $(this).attr('id');
+                // console.log("Clicked: " + recieverId);
+                $('#name').html( $(this).attr('name'));
+                $('#phone').html( $(this).attr('phone'));
+                $.ajax({
+                    type:"get",
+                    url: "message/"+recieverId,
+                    data: "",
+                    cache:false,
+                    success:function(data){
+                        // console.log(data);
+                        $('#messages').html(data);
+                        scrollToBottomFunc();
+                    }
+                });
+
+            });
+
+
+
+            $(document).on('keyup', '.input-text input', function (e) {
+                var message = $(this).val();
+                if (e.keyCode == 13 && message != '' && recieverId != '') {
+                    $(this).val('');
+                    var datastr = "receiver_id=" + recieverId + "&message=" + message;
+                    $.ajax({
+                        type: "post",
+                        url: "message", // need to create this post route
+                        data: datastr,
+                        cache: false,
+                        success: function (data) {
+
+                        },
+                        error: function (jqXHR, status, err) {
+                        },
+                        complete: function () {
+                            scrollToBottomFunc();
+                        }
+                    })
+                }
+            });
+
+
+        });
+
+        function scrollToBottomFunc() {
+            $('.chat-history').animate({
+                scrollTop: $('.chat-history').get(0).scrollHeight
+            }, 50);
+        }
+
+    </script>
    </body>
 </html>
