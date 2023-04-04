@@ -151,13 +151,15 @@
                     var datastr = "receiver_id=" + recieverId + "&message=" + message;
                     $.ajax({
                         type: "post",
-                        url: "message", // need to create this post route
+                        url: "message",
                         data: datastr,
                         cache: false,
                         success: function (data) {
 
                         },
                         error: function (jqXHR, status, err) {
+                            $(".input-text input").val(message);
+                            alert("Can't send message because it contains harmful url!");
                         },
                         complete: function () {
                             scrollToBottomFunc();

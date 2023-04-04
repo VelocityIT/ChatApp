@@ -10,6 +10,7 @@ use App\Models\WebsiteLink;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use App\Services\VirusTotalService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Services\SafeBrowsingService;
@@ -103,6 +104,15 @@ class UserController extends Controller
         $from = Auth::id();
         $to = $request->receiver_id;
         $message = $request->message;
+
+        preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $message, $match);
+
+        $virusTotalService = new VirusTotalService();
+        $isSafe = $virusTotalService->isSafeUrl($match[0]);
+        if (!$isSafe) {
+            return response()->json("Unsafe url detected",400);
+        }
+
 
         $data = new Message();
         $data->from = $from;
