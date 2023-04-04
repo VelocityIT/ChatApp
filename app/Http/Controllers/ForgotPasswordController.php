@@ -45,7 +45,7 @@ class ForgotPasswordController extends Controller
 
     public function showResetPasswordForm($token)
     {
-        return view('backend.auth.resetpassword',["token"=>$token]);
+        return view('auth.resetpassword',["token"=>$token]);
     }
 
     public function submitResetPasswordForm(Request $request)
@@ -63,7 +63,7 @@ class ForgotPasswordController extends Controller
                             ->first();
 
         if(!$updatePassword){
-            return back()->withInput()->with('error', 'Invalid token!');
+            return back()->withInput()->with('failure', 'Invalid token!');
         }
 
         $user = User::where('email', $request->email)
@@ -76,6 +76,6 @@ class ForgotPasswordController extends Controller
 
     public function showResetPasswordSuccess()
     {
-        return view('backend.auth.reset-password-success');
+        return view('auth.reset-success');
     }
 }
