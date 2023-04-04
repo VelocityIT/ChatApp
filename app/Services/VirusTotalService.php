@@ -28,25 +28,33 @@ class VirusTotalService
      *
      * @throws GuzzleException
      */
-    public function isSafeUrl($url)
+    public function isSafeUrl(array $urls)
     {
-        $response = $this->httpClient->get('url/report', [
-            'query' => [
-                'apikey' => $this->apiKey,
-                'resource' => $url,
-                'scan' => '1',
-            ],
-        ]);
+        $results = [];
 
-        $body = json_decode($response->getBody(), true);
-        $status =  $body['response_code'] == 1 && $body['positives'] == 0;
+        foreach ($urls as $url) {
+            $response = $this->httpClient->get('url/report', [
+                'query' => [
+                    'apikey' => $this->apiKey,
+                    'resource' => $url,
+                    'scan' => '1',
+                ],
+            ]);
 
-        ScanLog::create([
-            "url" => $url,
-            "status" => $status,
-        ]);
+            $body = json_decode($response->getBody(), true);
+
+            $results[$url] = $body['response_code'] == 1 && $body['positives'] == 0;
+        }
+
+        $isSafe = true;
+        foreach($results as $result){
+            if ($result == false){
+                $isSafe = false;
+                break;
+            }
+        }
 
 
-        return $status;
+        return $isSafe;
     }
 }

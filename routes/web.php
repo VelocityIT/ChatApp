@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ForgotPasswordController;
 
+use function PHPUnit\Framework\isEmpty;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -35,10 +37,32 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/message/{id}',[UserController::class,'getMessage']);
     Route::post('message', [UserController::class,'sendMessage']);
     Route::get('/check', function () {
+
+        $string = "The text you want to filter goes here. http://google.com, https://testsafebrowsing.appspot.com/s/phishing.html https://www.youtube.com/watch?v=K_m7NEDMrV0,https://instagram.com/hellow/";
+        preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $string, $match);
+
         $virusTotalService = new VirusTotalService();
-        $url = 'https://example.com';
+
+        // $isSafe = true;
+        // if(!empty( $match[0])){
+        //     foreach($match[0] as $url){
+        //         // return $url;
+        //         $isSafe = $virusTotalService->isSafeUrl($url);
+        //         if (!$isSafe) {
+        //             break;
+        //         }
+        //     }
+        // }
+
+        // if ($isSafe) {
+        //     return response()->json(['isSafe' => true]);
+        // } else {
+        //     return response()->json(['isSafe' => false]);
+        // }
+
+        // $url = 'https://example.com';
         // $url = 'https://testsafebrowsing.appspot.com/s/phishing.html';
-        $isSafe = $virusTotalService->isSafeUrl($url);
+        $isSafe = $virusTotalService->isSafeUrl($match[0]);
         if ($isSafe) {
             return response()->json(['isSafe' => true]);
         } else {
